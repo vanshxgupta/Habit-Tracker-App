@@ -1,6 +1,5 @@
 const Habit = require("../models/Habit")
 
-
 exports.getHabits = async (req, res, next) => {
   try {
     const habits = await Habit.find({ user: req.user.id })
@@ -10,7 +9,6 @@ exports.getHabits = async (req, res, next) => {
   }
 }
 
-
 exports.getHabit = async (req, res, next) => {
   try {
     const habit = await Habit.findById(req.params.id)
@@ -19,7 +17,6 @@ exports.getHabit = async (req, res, next) => {
       return res.status(404).json({ message: "Habit not found" })
     }
 
-    // Make sure user owns the habit
     if (habit.user.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to access this habit" })
     }
@@ -30,11 +27,8 @@ exports.getHabit = async (req, res, next) => {
   }
 }
 
-
-
 exports.createHabit = async (req, res, next) => {
   try {
-    // Add user to req.body
     req.body.user = req.user.id
 
     const habit = await Habit.create(req.body)
@@ -44,7 +38,6 @@ exports.createHabit = async (req, res, next) => {
   }
 }
 
-
 exports.updateHabit = async (req, res, next) => {
   try {
     let habit = await Habit.findById(req.params.id)
@@ -53,7 +46,6 @@ exports.updateHabit = async (req, res, next) => {
       return res.status(404).json({ message: "Habit not found" })
     }
 
-    // Make sure user owns the habit
     if (habit.user.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to update this habit" })
     }
@@ -69,7 +61,6 @@ exports.updateHabit = async (req, res, next) => {
   }
 }
 
-
 exports.deleteHabit = async (req, res, next) => {
   try {
     const habit = await Habit.findById(req.params.id)
@@ -78,18 +69,16 @@ exports.deleteHabit = async (req, res, next) => {
       return res.status(404).json({ message: "Habit not found" })
     }
 
-    // Make sure user owns the habit
     if (habit.user.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to delete this habit" })
     }
 
-    await habit.remove()
+    await habit.deleteOne() // ✅ Proper deletion
     res.status(200).json({ message: "Habit deleted successfully" })
   } catch (error) {
     next(error)
   }
 }
-
 
 exports.markHabitCompletion = async (req, res, next) => {
   try {
@@ -105,19 +94,15 @@ exports.markHabitCompletion = async (req, res, next) => {
       return res.status(404).json({ message: "Habit not found" })
     }
 
-    // Make sure user owns the habit
     if (habit.user.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to update this habit" })
     }
 
-    // Check if completion for this date already exists
     const existingCompletion = habit.completions.find((c) => c.date === date)
 
     if (existingCompletion) {
-      // Update existing completion
       existingCompletion.completed = completed
     } else {
-      // Add new completion
       habit.completions.push({ date, completed })
     }
 
@@ -127,4 +112,3 @@ exports.markHabitCompletion = async (req, res, next) => {
     next(error)
   }
 }
-
